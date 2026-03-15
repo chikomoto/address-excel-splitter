@@ -358,6 +358,7 @@ function App() {
                 </div>
               )}
 
+              <div className="flex gap-3 flex-wrap">
               <button
                 onClick={handleDownload}
                 disabled={!canDownload}
@@ -366,6 +367,20 @@ function App() {
                 <Download className="h-4 w-4" />
                 Download updated file
               </button>
+
+              <button
+                onClick={() => {
+                  setRowsPreview([]);
+                  setDetectedInfo(null);
+                  setFileName("");
+                  setStatus("idle");
+                  setMessage("Upload a file to begin.");
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-400/40 bg-red-500/10 px-5 py-3 text-red-200 hover:bg-red-500/20"
+              >
+                Clear / Start Over
+              </button>
+            </div>
             </div>
           </motion.div>
 
@@ -386,13 +401,13 @@ function App() {
             </p>
 
             <div className="mt-5 overflow-auto rounded-[22px] border border-white/10 bg-black/10">
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-sm border-collapse">
                 <tbody>
                   {rowsPreview.length ? (
                     rowsPreview.map((row, rowIndex) => (
-                      <tr key={rowIndex} className={rowIndex === 0 ? "bg-white/10 font-semibold" : "border-t border-white/10"}>
+                      <tr key={rowIndex} className={rowIndex === 0 ? "bg-white/15 font-semibold sticky top-0" : "border-t border-white/10 odd:bg-white/5"}>
                         {row.map((cell, cellIndex) => (
-                          <td key={cellIndex} className="px-3 py-2 whitespace-nowrap align-top text-slate-200">
+                          <td key={cellIndex} className="px-4 py-2 whitespace-nowrap align-top text-slate-200 border-r border-white/10 last:border-r-0">
                             {String(cell ?? "")}
                           </td>
                         ))}
