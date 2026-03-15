@@ -196,109 +196,239 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-[#16122b] to-slate-950 text-slate-100 p-6 md:p-10">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(34,211,238,0.12),_transparent_28%),linear-gradient(135deg,#09090f_0%,#141126_45%,#0a0d18_100%)] text-slate-100 p-6 md:p-10">
       <div className="max-w-6xl mx-auto grid gap-6">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-violet-500/20 bg-white/5 shadow-[0_0_40px_rgba(139,92,246,0.15)] backdrop-blur-xl p-6 md:p-8">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-sm font-medium text-slate-300">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-[28px] border border-violet-400/20 bg-white/5 shadow-[0_0_40px_rgba(139,92,246,0.18)] backdrop-blur-xl p-6 md:p-8"
+        >
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(168,85,247,0.12),transparent_35%,rgba(34,211,238,0.08))] pointer-events-none" />
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-sm font-medium text-violet-200">
               <FileSpreadsheet className="h-4 w-4" />
-              Excel Address Splitter
+              Geneco Address Splitter
             </div>
-            <h1 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">Upload an Excel file and split Singapore addresses automatically</h1>
-            <p className="mt-3 text-slate-600 max-w-3xl">Rewritten to support SP-style reports where the real header row is lower down and the address column is usually named PREMISES.</p>
+            <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">
+                  Upload, split, and export Singapore addresses
+                </h1>
+                <p className="mt-3 max-w-3xl text-slate-300 leading-6">
+                  Built for SP-style reports. The app auto-detects the real header row, finds the premises column, and appends separated address fields into a cleaned output file.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm min-w-[260px]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="text-slate-400">Mode</div>
+                  <div className="mt-1 font-medium text-white">{mode === "smart" ? "Smart Detect" : mode === "header" ? "Header Name" : "Column Letter"}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="text-slate-400">Status</div>
+                  <div className="mt-1 font-medium text-white capitalize">{status}</div>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-3xl border border-violet-500/20 bg-white/5 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-xl p-6">
-            <h2 className="text-xl font-semibold">1. Configure input</h2>
-            <div className="mt-5 grid gap-4">
+        <div className="grid lg:grid-cols-[1.08fr_0.92fr] gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="rounded-[28px] border border-violet-400/20 bg-white/5 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-xl p-6"
+          >
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h2 className="text-xl font-semibold text-white">Upload settings</h2>
+              <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs font-medium text-cyan-200">
+                Excel in, Excel out
+              </span>
+            </div>
+
+            <div className="mt-6 grid gap-5">
               <div>
-                <label className="text-sm font-medium text-slate-200">Detection mode</label>
-                <div className="mt-2 flex gap-2 flex-wrap">
-                  <button onClick={() => setMode("smart")} className={`rounded-2xl px-4 py-2 border transition ${mode === "smart" ? "border-violet-400/60 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.35)]" : "border-white/10 bg-white/5 text-slate-200"}`}>Smart detect</button>
-                  <button onClick={() => setMode("header")} className={`rounded-2xl px-4 py-2 border transition ${mode === "header" ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white text-slate-700"}`}>Use header name</button>
-                  <button onClick={() => setMode("letter")} className={`rounded-2xl px-4 py-2 border transition ${mode === "letter" ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white text-slate-700"}`}>Use column letter</button>
+                <label className="text-sm font-medium text-slate-300">Detection mode</label>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button
+                    onClick={() => setMode("smart")}
+                    className={`rounded-2xl px-4 py-3 border transition text-sm font-medium ${
+                      mode === "smart"
+                        ? "border-violet-400/60 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.35)]"
+                        : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+                    }`}
+                  >
+                    Smart detect
+                  </button>
+                  <button
+                    onClick={() => setMode("header")}
+                    className={`rounded-2xl px-4 py-3 border transition text-sm font-medium ${
+                      mode === "header"
+                        ? "border-violet-400/60 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.35)]"
+                        : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+                    }`}
+                  >
+                    Use header name
+                  </button>
+                  <button
+                    onClick={() => setMode("letter")}
+                    className={`rounded-2xl px-4 py-3 border transition text-sm font-medium ${
+                      mode === "letter"
+                        ? "border-violet-400/60 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.35)]"
+                        : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+                    }`}
+                  >
+                    Use column letter
+                  </button>
                 </div>
               </div>
 
               {mode === "header" && (
                 <div>
-                  <label className="text-sm font-medium text-slate-700">Address column header</label>
-                  <input value={headerName} onChange={(e) => setHeaderName(e.target.value)} className="mt-2 w-full rounded-2xl border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-violet-400/40 bg-white/5 text-slate-100" placeholder="Example: PREMISES" />
+                  <label className="text-sm font-medium text-slate-300">Address column header</label>
+                  <input
+                    value={headerName}
+                    onChange={(e) => setHeaderName(e.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-violet-400/40"
+                    placeholder="Example: PREMISES"
+                  />
                 </div>
               )}
 
               {mode === "letter" && (
                 <div>
-                  <label className="text-sm font-medium text-slate-700">Address column letter</label>
-                  <input value={columnLetter} onChange={(e) => setColumnLetter(e.target.value.toUpperCase())} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" placeholder="Example: F" />
+                  <label className="text-sm font-medium text-slate-300">Address column letter</label>
+                  <input
+                    value={columnLetter}
+                    onChange={(e) => setColumnLetter(e.target.value.toUpperCase())}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-violet-400/40"
+                    placeholder="Example: F"
+                  />
                 </div>
               )}
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Excel file</label>
-                <label className="mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-violet-400/30 bg-white/5 px-6 py-10 text-center hover:bg-white/10 transition">
-                  <Upload className="h-5 w-5" />
-                  <span className="font-medium">Choose .xlsx, .xls or .csv file</span>
+                <label className="text-sm font-medium text-slate-300">Excel file</label>
+                <label className="group mt-3 relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[24px] border-2 border-dashed border-violet-400/30 bg-white/5 px-6 py-12 text-center transition hover:bg-white/10 hover:border-violet-300/45 overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.16),_transparent_38%)] opacity-80 pointer-events-none" />
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 shadow-[0_0_25px_rgba(56,189,248,0.25)]">
+                    <Upload className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="relative">
+                    <div className="font-medium text-white">Upload your report</div>
+                    <div className="mt-1 text-sm text-slate-300">Choose .xlsx, .xls or .csv</div>
+                  </div>
                   <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileUpload} />
                 </label>
-                {fileName ? <p className="mt-2 text-sm text-slate-400">Selected file: {fileName}</p> : null}
+                {fileName ? <p className="mt-3 text-sm text-slate-400">Selected file: {fileName}</p> : null}
               </div>
 
-              <div className={`rounded-2xl border p-4 ${status === "error" ? "border-red-400/30 bg-red-500/10 text-red-300" : status === "ready" ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300" : "border-white/10 bg-white/5 text-slate-300"}`}>
+              <div className={`rounded-[22px] border p-4 ${
+                status === "error"
+                  ? "border-red-400/30 bg-red-500/10 text-red-200"
+                  : status === "ready"
+                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
+                  : "border-white/10 bg-white/5 text-slate-300"
+              }`}>
                 <div className="flex items-center gap-2 font-medium">
                   {status === "error" ? <AlertCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                  Status
+                  Processing status
                 </div>
-                <p className="mt-1 text-sm">{message}</p>
+                <p className="mt-2 text-sm leading-6">{message}</p>
               </div>
 
               {detectedInfo && (
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-700">
-                  <div><strong>Sheet:</strong> {sheetNameUsed}</div>
-                  <div><strong>Detected header row:</strong> {detectedInfo.headerRowNumber}</div>
-                  <div><strong>Detected address column:</strong> {detectedInfo.columnName} (column {detectedInfo.columnNumber})</div>
-                  <div><strong>Rows parsed:</strong> {detectedInfo.processedCount}</div>
+                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-slate-400">Sheet</div>
+                    <div className="mt-1 font-medium text-white">{sheetNameUsed}</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <div className="text-slate-400">Detected header row</div>
+                    <div className="mt-1 font-medium text-white">{detectedInfo.headerRowNumber}</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-2">
+                    <div className="text-slate-400">Detected address column</div>
+                    <div className="mt-1 font-medium text-white">{detectedInfo.columnName} (column {detectedInfo.columnNumber})</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-2">
+                    <div className="text-slate-400">Rows parsed</div>
+                    <div className="mt-1 text-2xl font-semibold text-white">{detectedInfo.processedCount}</div>
+                  </div>
                 </div>
               )}
 
-              <button onClick={handleDownload} disabled={!canDownload} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 px-5 py-3 text-white shadow-[0_0_24px_rgba(168,85,247,0.35)] font-medium disabled:opacity-40 disabled:cursor-not-allowed">
+              <button
+                onClick={handleDownload}
+                disabled={!canDownload}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 px-5 py-3 text-white font-medium shadow-[0_0_24px_rgba(168,85,247,0.35)] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 <Download className="h-4 w-4" />
                 Download updated file
               </button>
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-3xl border border-slate-200 bg-white shadow-lg p-6">
-            <h2 className="text-xl font-semibold">2. Preview output</h2>
-            <p className="mt-2 text-sm text-slate-600">The app keeps the report layout and appends 3 new columns to the right side of the detected sheet.</p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-[28px] border border-violet-400/20 bg-white/5 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-xl p-6"
+          >
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h2 className="text-xl font-semibold text-white">Output preview</h2>
+              <span className="rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-medium text-violet-200">
+                Live preview
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-slate-300 leading-6">
+              The report layout is preserved. Three new columns are appended on the right side of the detected sheet.
+            </p>
 
-            <div className="mt-5 overflow-auto rounded-2xl border border-slate-200">
+            <div className="mt-5 overflow-auto rounded-[22px] border border-white/10 bg-black/10">
               <table className="min-w-full text-sm">
                 <tbody>
-                  {rowsPreview.length ? rowsPreview.map((row, rowIndex) => (
-                    <tr key={rowIndex} className={rowIndex === 0 ? "bg-white/10 font-semibold" : "border-t border-white/10"}>
-                      {row.map((cell, cellIndex) => (
-                        <td key={cellIndex} className="px-3 py-2 whitespace-nowrap align-top">{String(cell ?? "")}</td>
-                      ))}
-                    </tr>
-                  )) : (
+                  {rowsPreview.length ? (
+                    rowsPreview.map((row, rowIndex) => (
+                      <tr key={rowIndex} className={rowIndex === 0 ? "bg-white/10 font-semibold" : "border-t border-white/10"}>
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex} className="px-3 py-2 whitespace-nowrap align-top text-slate-200">
+                            {String(cell ?? "")}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td className="px-4 py-8 text-slate-500">No preview yet. Upload a file to see the processed rows around the detected header.</td>
+                      <td className="px-4 py-10 text-slate-400">
+                        No preview yet. Upload a file to see the processed rows around the detected header.
+                      </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
 
-            <div className="mt-5 rounded-2xl bg-slate-50 border border-slate-200 p-4">
-              <p className="font-medium">Expected parsing example</p>
-              <p className="mt-2 text-sm text-slate-600">Input: <span className="font-mono">234 LOR 8 TOA PAYOH #01-284 SINGAPORE 310234</span></p>
-              <div className="mt-3 grid md:grid-cols-3 gap-3 text-sm">
-                <div className="rounded-2xl bg-white/5 border border-white/10 p-3"><div className="text-slate-500">Parsed Address</div><div className="mt-1 font-medium">234 LOR 8 TOA PAYOH</div></div>
-                <div className="rounded-2xl bg-white border border-slate-200 p-3"><div className="text-slate-500">Unit Number</div><div className="mt-1 font-medium">#01-284</div></div>
-                <div className="rounded-2xl bg-white border border-slate-200 p-3"><div className="text-slate-500">Postal Code</div><div className="mt-1 font-medium">310234</div></div>
+            <div className="mt-5 grid gap-3">
+              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                <p className="font-medium text-white">Expected parsing example</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  Input: <span className="font-mono text-cyan-200">234 LOR 8 TOA PAYOH #01-284 SINGAPORE 310234</span>
+                </p>
+              </div>
+              <div className="grid md:grid-cols-3 gap-3 text-sm">
+                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                  <div className="text-slate-400">Parsed Address</div>
+                  <div className="mt-2 font-medium text-white">234 LOR 8 TOA PAYOH</div>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                  <div className="text-slate-400">Unit Number</div>
+                  <div className="mt-2 font-medium text-white">#01-284</div>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                  <div className="text-slate-400">Postal Code</div>
+                  <div className="mt-2 font-medium text-white">310234</div>
+                </div>
               </div>
             </div>
           </motion.div>
