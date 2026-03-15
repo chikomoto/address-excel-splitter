@@ -1,12 +1,6 @@
 import React, { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-import {
-  Upload,
-  Download,
-  FileSpreadsheet,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 function cleanText(value) {
@@ -27,11 +21,9 @@ function parseSingaporeAddress(value) {
 
   working = working.replace(/\s*SINGAPORE\s*$/i, "").trim();
 
-  const unitMatch = working.match(/(#[A-Z0-9\-/]+)$/i);
+  const unitMatch = working.match(/(#[A-Z0-9\-\/]+)$/i);
   const unitNumber = unitMatch ? unitMatch[1] : "";
-  const address = unitNumber
-    ? working.slice(0, working.lastIndexOf(unitNumber)).trim()
-    : working;
+  const address = unitNumber ? working.slice(0, working.lastIndexOf(unitNumber)).trim() : working;
 
   return { address, unitNumber, postalCode };
 }
@@ -52,15 +44,7 @@ function findHeaderRow(rows) {
 
 function findAddressColumn(headerRow, dataRows) {
   const headers = (headerRow || []).map((cell) => cleanText(cell).toUpperCase());
-  const preferred = [
-    "PREMISES",
-    "ADDRESS",
-    "FULL ADDRESS",
-    "PREMISE ADDRESS",
-    "PREMISES ADDRESS",
-    "LOCATION",
-    "SITE ADDRESS",
-  ];
+  const preferred = ["PREMISES", "ADDRESS", "FULL ADDRESS", "PREMISE ADDRESS", "PREMISES ADDRESS", "LOCATION", "SITE ADDRESS"];
 
   for (const name of preferred) {
     const idx = headers.findIndex((cell) => cell === name);
@@ -69,8 +53,7 @@ function findAddressColumn(headerRow, dataRows) {
 
   let bestIndex = -1;
   let bestScore = 0;
-  const widthCandidates = [headerRow?.length || 0, ...dataRows.slice(0, 20).map((row) => row.length || 0)];
-  const maxColumns = Math.max(...widthCandidates);
+  const maxColumns = Math.max(headerRow?.length || 0, ...dataRows.slice(0, 20).map((row) => row.length || 0));
 
   for (let col = 0; col < maxColumns; col += 1) {
     let score = 0;
@@ -98,11 +81,7 @@ function getColumnIndexFromLetter(letter) {
 
 function isFooterRow(row) {
   const combined = row.map((cell) => cleanText(cell).toUpperCase()).join(" ");
-  return (
-    combined.includes("-END OF REPORT-") ||
-    combined.includes("NO.OF CTR") ||
-    combined.includes("NO. OF CTR")
-  );
+  return combined.includes("-END OF REPORT-") || combined.includes("NO.OF CTR") || combined.includes("NO. OF CTR");
 }
 
 function buildProcessedSheet(rows, mode, headerName, columnLetter) {
@@ -113,39 +92,25 @@ function buildProcessedSheet(rows, mode, headerName, columnLetter) {
   let addressColIndex = 0;
   if (mode === "smart") {
     addressColIndex = findAddressColumn(headerRow, dataRows);
-    if (addressColIndex === -1) {
-      throw new Error("Could not detect the address column automatically.");
-    }
+    if (addressColIndex === -1) throw new Error("Could not detect the address column automatically.");
   } else if (mode === "header") {
-    addressColIndex = headerRow.findIndex(
-      (cell) => cleanText(cell).toLowerCase() === cleanText(headerName).toLowerCase()
-    );
-    if (addressColIndex === -1) {
-      throw new Error(`Column header "${headerName}" was not found.`);
-    }
+    addressColIndex = headerRow.findIndex((cell) => cleanText(cell).toLowerCase() === cleanText(headerName).toLowerCase());
+    if (addressColIndex === -1) throw new Error("Column header \"" + headerName + "\" was not found.");
   } else {
     addressColIndex = getColumnIndexFromLetter(columnLetter);
   }
 
   const outputRows = rows.map((row) => [...row]);
   const originalHeader = cleanText(outputRows[headerRowIndex]?.[addressColIndex]) || "Address";
-
-  outputRows[headerRowIndex].push(
-    originalHeader + " - Parsed Address",
-    originalHeader + " - Unit Number",
-    originalHeader + " - Postal Code"
-  );
+  outputRows[headerRowIndex].push(originalHeader + " - Parsed Address", originalHeader + " - Unit Number", originalHeader + " - Postal Code");
 
   let processedCount = 0;
-
   for (let i = headerRowIndex + 1; i < outputRows.length; i += 1) {
     const row = outputRows[i];
-
     if (isFooterRow(row)) {
       row.push("", "", "");
       continue;
     }
-
     const cellValue = row[addressColIndex];
     if (looksLikeAddress(cellValue)) {
       const parsed = parseSingaporeAddress(cellValue);
@@ -158,10 +123,7 @@ function buildProcessedSheet(rows, mode, headerName, columnLetter) {
 
   return {
     outputRows,
-    previewRows: outputRows.slice(
-      headerRowIndex,
-      Math.min(outputRows.length, headerRowIndex + 8)
-    ),
+    previewRows: outputRows.slice(headerRowIndex, Math.min(outputRows.length, headerRowIndex + 8)),
     detectedHeaderRow: headerRowIndex,
     detectedColumnIndex: addressColIndex,
     detectedColumnName: originalHeader,
@@ -173,9 +135,7 @@ function App() {
   const [fileName, setFileName] = useState("");
   const [rowsPreview, setRowsPreview] = useState([]);
   const [status, setStatus] = useState("idle");
-  const [message, setMessage] = useState(
-    "Upload an Excel file. Smart detect is tuned for SP-style reports with a PREMISES column."
-  );
+  const [message, setMessage] = useState("Upload an Excel file. Smart detect is tuned for SP-style reports with a PREMISES column.");
   const [processedWorkbook, setProcessedWorkbook] = useState(null);
   const [mode, setMode] = useState("smart");
   const [headerName, setHeaderName] = useState("PREMISES");
@@ -218,11 +178,7 @@ function App() {
         processedCount: result.processedCount,
       });
       setStatus("ready");
-      setMessage(
-        `Done. Detected sheet "${sheetName}", header row ${
-          result.detectedHeaderRow + 1
-        }, and address column "${result.detectedColumnName}".`
-      );
+      setMessage("Done. Detected sheet \"" + sheetName + "\", header row " + (result.detectedHeaderRow + 1) + ", and address column \"" + result.detectedColumnName + "\".");
     } catch (error) {
       console.error(error);
       setStatus("error");
@@ -240,201 +196,110 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 p-6 md:p-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-[#16122b] to-slate-950 text-slate-100 p-6 md:p-10">
       <div className="max-w-6xl mx-auto grid gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-slate-200 bg-white/90 shadow-xl p-6 md:p-8"
-        >
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-violet-500/20 bg-white/5 shadow-[0_0_40px_rgba(139,92,246,0.15)] backdrop-blur-xl p-6 md:p-8">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-sm font-medium text-slate-600">
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-sm font-medium text-slate-300">
               <FileSpreadsheet className="h-4 w-4" />
               Excel Address Splitter
             </div>
-            <h1 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">
-              Upload an Excel file and split Singapore addresses automatically
-            </h1>
-            <p className="mt-3 text-slate-600 max-w-3xl">
-              Rewritten to support SP-style reports where the real header row is lower down
-              and the address column is usually named PREMISES.
-            </p>
+            <h1 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">Upload an Excel file and split Singapore addresses automatically</h1>
+            <p className="mt-3 text-slate-600 max-w-3xl">Rewritten to support SP-style reports where the real header row is lower down and the address column is usually named PREMISES.</p>
           </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="rounded-3xl border border-slate-200 bg-white shadow-lg p-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-3xl border border-violet-500/20 bg-white/5 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-xl p-6">
             <h2 className="text-xl font-semibold">1. Configure input</h2>
             <div className="mt-5 grid gap-4">
               <div>
-                <label className="text-sm font-medium text-slate-700">Detection mode</label>
+                <label className="text-sm font-medium text-slate-200">Detection mode</label>
                 <div className="mt-2 flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => setMode("smart")}
-                    className={`rounded-2xl px-4 py-2 border transition ${
-                      mode === "smart"
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-300 bg-white text-slate-700"
-                    }`}
-                  >
-                    Smart detect
-                  </button>
-                  <button
-                    onClick={() => setMode("header")}
-                    className={`rounded-2xl px-4 py-2 border transition ${
-                      mode === "header"
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-300 bg-white text-slate-700"
-                    }`}
-                  >
-                    Use header name
-                  </button>
-                  <button
-                    onClick={() => setMode("letter")}
-                    className={`rounded-2xl px-4 py-2 border transition ${
-                      mode === "letter"
-                        ? "border-slate-900 bg-slate-900 text-white"
-                        : "border-slate-300 bg-white text-slate-700"
-                    }`}
-                  >
-                    Use column letter
-                  </button>
+                  <button onClick={() => setMode("smart")} className={`rounded-2xl px-4 py-2 border transition ${mode === "smart" ? "border-violet-400/60 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.35)]" : "border-white/10 bg-white/5 text-slate-200"}`}>Smart detect</button>
+                  <button onClick={() => setMode("header")} className={`rounded-2xl px-4 py-2 border transition ${mode === "header" ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white text-slate-700"}`}>Use header name</button>
+                  <button onClick={() => setMode("letter")} className={`rounded-2xl px-4 py-2 border transition ${mode === "letter" ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white text-slate-700"}`}>Use column letter</button>
                 </div>
               </div>
 
               {mode === "header" && (
                 <div>
-                  <label className="text-sm font-medium text-slate-700">
-                    Address column header
-                  </label>
-                  <input
-                    value={headerName}
-                    onChange={(e) => setHeaderName(e.target.value)}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
-                    placeholder="Example: PREMISES"
-                  />
+                  <label className="text-sm font-medium text-slate-700">Address column header</label>
+                  <input value={headerName} onChange={(e) => setHeaderName(e.target.value)} className="mt-2 w-full rounded-2xl border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-violet-400/40 bg-white/5 text-slate-100" placeholder="Example: PREMISES" />
                 </div>
               )}
 
               {mode === "letter" && (
                 <div>
-                  <label className="text-sm font-medium text-slate-700">
-                    Address column letter
-                  </label>
-                  <input
-                    value={columnLetter}
-                    onChange={(e) => setColumnLetter(e.target.value.toUpperCase())}
-                    className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300"
-                    placeholder="Example: F"
-                  />
+                  <label className="text-sm font-medium text-slate-700">Address column letter</label>
+                  <input value={columnLetter} onChange={(e) => setColumnLetter(e.target.value.toUpperCase())} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-300" placeholder="Example: F" />
                 </div>
               )}
 
               <div>
                 <label className="text-sm font-medium text-slate-700">Excel file</label>
-                <label className="mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center hover:bg-slate-100 transition">
+                <label className="mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-violet-400/30 bg-white/5 px-6 py-10 text-center hover:bg-white/10 transition">
                   <Upload className="h-5 w-5" />
                   <span className="font-medium">Choose .xlsx, .xls or .csv file</span>
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls,.csv"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
+                  <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileUpload} />
                 </label>
-                {fileName ? (
-                  <p className="mt-2 text-sm text-slate-500">Selected file: {fileName}</p>
-                ) : null}
+                {fileName ? <p className="mt-2 text-sm text-slate-400">Selected file: {fileName}</p> : null}
               </div>
 
-              <div
-                className={`rounded-2xl border p-4 ${
-                  status === "error"
-                    ? "border-red-200 bg-red-50 text-red-700"
-                    : status === "ready"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-slate-50 text-slate-600"
-                }`}
-              >
+              <div className={`rounded-2xl border p-4 ${status === "error" ? "border-red-400/30 bg-red-500/10 text-red-300" : status === "ready" ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300" : "border-white/10 bg-white/5 text-slate-300"}`}>
                 <div className="flex items-center gap-2 font-medium">
-                  {status === "error" ? (
-                    <AlertCircle className="h-4 w-4" />
-                  ) : (
-                    <CheckCircle2 className="h-4 w-4" />
-                  )}
+                  {status === "error" ? <AlertCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
                   Status
                 </div>
                 <p className="mt-1 text-sm">{message}</p>
               </div>
 
               {detectedInfo && (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-700">
                   <div><strong>Sheet:</strong> {sheetNameUsed}</div>
                   <div><strong>Detected header row:</strong> {detectedInfo.headerRowNumber}</div>
-                  <div>
-                    <strong>Detected address column:</strong> {detectedInfo.columnName} (column{" "}
-                    {detectedInfo.columnNumber})
-                  </div>
+                  <div><strong>Detected address column:</strong> {detectedInfo.columnName} (column {detectedInfo.columnNumber})</div>
                   <div><strong>Rows parsed:</strong> {detectedInfo.processedCount}</div>
                 </div>
               )}
 
-              <button
-                onClick={handleDownload}
-                disabled={!canDownload}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-              >
+              <button onClick={handleDownload} disabled={!canDownload} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 px-5 py-3 text-white shadow-[0_0_24px_rgba(168,85,247,0.35)] font-medium disabled:opacity-40 disabled:cursor-not-allowed">
                 <Download className="h-4 w-4" />
                 Download updated file
               </button>
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="rounded-3xl border border-slate-200 bg-white shadow-lg p-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-3xl border border-slate-200 bg-white shadow-lg p-6">
             <h2 className="text-xl font-semibold">2. Preview output</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              The app keeps the report layout and appends 3 new columns to the right side
-              of the detected sheet.
-            </p>
+            <p className="mt-2 text-sm text-slate-600">The app keeps the report layout and appends 3 new columns to the right side of the detected sheet.</p>
 
             <div className="mt-5 overflow-auto rounded-2xl border border-slate-200">
               <table className="min-w-full text-sm">
                 <tbody>
-                  {rowsPreview.length ? (
-                    rowsPreview.map((row, rowIndex) => (
-                      <tr
-                        key={rowIndex}
-                        className={
-                          rowIndex === 0 ? "bg-slate-100 font-semibold" : "border-t border-slate-200"
-                        }
-                      >
-                        {row.map((cell, cellIndex) => (
-                          <td key={cellIndex} className="px-3 py-2 whitespace-nowrap align-top">
-                            {String(cell ?? "")}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : (
+                  {rowsPreview.length ? rowsPreview.map((row, rowIndex) => (
+                    <tr key={rowIndex} className={rowIndex === 0 ? "bg-white/10 font-semibold" : "border-t border-white/10"}>
+                      {row.map((cell, cellIndex) => (
+                        <td key={cellIndex} className="px-3 py-2 whitespace-nowrap align-top">{String(cell ?? "")}</td>
+                      ))}
+                    </tr>
+                  )) : (
                     <tr>
-                      <td className="px-4 py-8 text-slate-500">
-                        No preview yet. Upload a file to see the processed rows around the
-                        detected header.
-                      </td>
+                      <td className="px-4 py-8 text-slate-500">No preview yet. Upload a file to see the processed rows around the detected header.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+              <p className="font-medium">Expected parsing example</p>
+              <p className="mt-2 text-sm text-slate-600">Input: <span className="font-mono">234 LOR 8 TOA PAYOH #01-284 SINGAPORE 310234</span></p>
+              <div className="mt-3 grid md:grid-cols-3 gap-3 text-sm">
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-3"><div className="text-slate-500">Parsed Address</div><div className="mt-1 font-medium">234 LOR 8 TOA PAYOH</div></div>
+                <div className="rounded-2xl bg-white border border-slate-200 p-3"><div className="text-slate-500">Unit Number</div><div className="mt-1 font-medium">#01-284</div></div>
+                <div className="rounded-2xl bg-white border border-slate-200 p-3"><div className="text-slate-500">Postal Code</div><div className="mt-1 font-medium">310234</div></div>
+              </div>
             </div>
           </motion.div>
         </div>
